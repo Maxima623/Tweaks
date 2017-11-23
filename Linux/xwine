@@ -1,0 +1,59 @@
+#! /bin/sh
+# XWINE: A custom launcher for WINE
+
+# Check if WINE is installed
+if ( !(type wine &> /dev/null) ); then echo "WINE is not installed. Please install WINE before using XWINE."; exit 1; fi
+
+# Help string
+HELP="XWINE: A custom launcher for WINE
+      \n
+
+      \n\bUSAGE: \b\t xwine [OPTIONS] [WINEAPPLICATION]
+
+      \n\nOPTIONS:
+      \n\t -c \t Launch WINE application with CSMT.
+      \n\t -d \t Disable WINE's debugging feature(s).
+      \n\t -h \t Show help for details.
+      \n\t -w \t Launch WINE in 32-bit mode.
+      
+      \n
+     "
+
+# Determine CSMT's current value if it exists
+if ( wine reg query "HKCU\Software\Wine\Direct3D" /v "csmt" &> /dev/null ); then
+    CSMT="$(wine reg query "HKCU\Software\Wine\Direct3D" /v "csmt" | awk '/csmt/ {print $3}')"; CSMT=${CSMT%?}
+else
+    CSMT="0xF"
+fi
+
+# Define default CSMT enable flag
+export ENABLECSMT="0"
+
+# Process arguments/options included at runtime
+while getopts "cdhw" OPT; do
+	case "$OPT" in
+		"c") export ENABLECSMT="1"; wine reg add "HKCU\Software\Wine\Direct3D" /f /v "csmt" /t REG_DWORD /d 0x1 &> /dev/null ;;
+		"d") export WINEDEBUG="-all" ;;
+		"h") echo -e $HELP; exit 0   ;;
+		"w") export WINEARCH="win32" ;;
+		"?") echo -e $HELP; exit 1   ;;
+	esac
+done
+
+shift "$((OPTIND - 1))"
+
+# Execute WINE
+wine "$@"
+
+# Restore default CSMT state if '-c' is used
+if [ $ENABLECSMT == "1" ]; then
+
+    if [ $CSMT == "0xF" ]; then
+        wine reg delete "HKCU\Software\Wine\Direct3D" /f /v "csmt" &> /dev/null
+    else
+        wine reg add "HKCU\Software\Wine\Direct3D" /f /v "csmt" /t REG_DWORD /d $CSMT &> /dev/null
+    fi
+
+fi
+
+exit 0

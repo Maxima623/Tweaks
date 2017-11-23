@@ -1,0 +1,94 @@
+#! /bin/sh
+
+############################################################
+
+# Path variables
+PD=/proc/sys/debug
+PK=/proc/sys/kernel
+PN=/proc/sys/net
+PV=/proc/sys/vm
+SB=/sys/block/sda/queue
+SK=/sys/kernel/mm/ksm
+ST=/sys/kernel/mm/transparent_hugepage
+
+# Determine RAM size in KB
+RAM_KB=$(free | awk '/Mem:/ {print $2}')
+
+# Set low RAM size (reference: 2GB)
+RAM_LOW_KB=$(( 2 * 1048576 ))
+
+# Define a function that only modifies settings if they exist
+# Useful if using script across different kernel versions
+wr() { if [ -e $1 ]; then echo $2 > $1; fi }
+
+############################################################
+
+# Disable exception trace & kernel watchdogs
+wr $PD/exception-trace 0
+wr $PK/nmi_watchdog 0
+wr $PK/soft_watchdog 0
+
+# Networking stack tweaks
+wr $PN/core/netdev_budget 512
+wr $PN/core/optmem_max 65536
+wr $PN/core/somaxconn 1024
+wr $PN/ipv4/ip_local_port_range '1024 65535'
+wr $PN/ipv4/tcp_fack 1
+wr $PN/ipv4/tcp_fin_timeout 30
+wr $PN/ipv4/tcp_keepalive_intvl 30
+wr $PN/ipv4/tcp_keepalive_probes 5
+wr $PN/ipv4/tcp_keepalive_time 600
+wr $PN/ipv4/tcp_max_syn_backlog 8192
+wr $PN/ipv4/tcp_mtu_probing 1
+wr $PN/ipv4/tcp_no_metrics_save 1
+wr $PN/ipv4/tcp_low_latency 1
+wr $PN/ipv4/tcp_rfc1337 1
+wr $PN/ipv4/tcp_slow_start_after_idle 0
+wr $PN/ipv4/tcp_synack_retries 3
+wr $PN/ipv4/tcp_syn_retries 3
+wr $PN/ipv4/tcp_tw_reuse 1
+wr $PN/ipv6/conf/all/disable_ipv6 1
+
+# General memory management tweaks
+wr $PV/dirty_bytes $(( 64 * 1048576 ))
+wr $PV/dirty_background_bytes $(( 16 * 1048576 ))
+wr $PV/dirty_expire_centisecs 60000
+wr $PV/dirty_writeback_centisecs 60000
+wr $PV/oom_dump_tasks 0
+wr $PV/oom_kill_allocating_task 1
+wr $PV/overcommit_ratio 100
+wr $PV/stat_interval 60
+wr $PV/swappiness 10
+wr $PV/vfs_cache_pressure 50
+wr $PV/watermark_scale_factor 100
+
+# RAM-dependent paging tweaks
+if [ $RAM_KB -gt $RAM_LOW_KB ]; then
+    wr $ST/defrag madvise
+    wr $ST/enabled madvise
+else
+    wr $SK/run 1
+    wr $SK/pages_to_scan 128
+    wr $SK/sleep_millisecs 1000
+
+    wr $ST/khugepaged/defrag 0
+    wr $ST/defrag never
+    wr $ST/enabled never
+fi    
+
+# Disk I/O queue tweaks
+wr $SB/add_random 0
+wr $SB/iostats 0
+wr $SB/nr_requests 1024
+wr $SB/max_sectors_kb $(cat $SB/max_hw_sectors_kb)
+wr $SB/read_ahead_kb 1024
+wr $SB/rq_affinity 2
+
+# Use BFQ (Budget Fair Queueing) I/O scheduler if available
+if ( grep -q "bfq-sq" $SB/scheduler ); then wr $SB/scheduler "bfq-sq"; fi
+
+# Reduce transmit queue length from default of 1000 packets
+ifconfig enp3s0 txqueuelen 50
+ifconfig wlp2s0 txqueuelen 50
+
+exit 0

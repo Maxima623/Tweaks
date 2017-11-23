@@ -1,0 +1,9 @@
+[Unit]
+Description=Linux System Tweaks
+
+[Service]
+ExecStart=/usr/local/bin/tweak
+Type=idle
+
+[Install]
+WantedBy=multi-user.target
