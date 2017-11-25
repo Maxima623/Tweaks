@@ -3,19 +3,19 @@
 ############################################################
 
 # Path variables
-PD=/proc/sys/debug
-PK=/proc/sys/kernel
-PN=/proc/sys/net
-PV=/proc/sys/vm
-SB=/sys/block/sda/queue
-SK=/sys/kernel/mm/ksm
-ST=/sys/kernel/mm/transparent_hugepage
+PD="/proc/sys/debug"
+PK="/proc/sys/kernel"
+PN="/proc/sys/net"
+PV="/proc/sys/vm"
+SB="/sys/block/sda/queue"
+SK="/sys/kernel/mm/ksm"
+ST="/sys/kernel/mm/transparent_hugepage"
 
 # Determine RAM size in KB
-RAM_KB=$(free | awk '/Mem:/ {print $2}')
+RAM_KB="$(free | awk '/Mem/ {print $2}')"
 
 # Set low RAM size (reference: 2GB)
-RAM_LOW_KB=$(( 2 * 1048576 ))
+RAM_LOW_KB="$(( 2 * 1048576 ))"
 
 # Define a function that only modifies settings if they exist
 # Useful if using script across different kernel versions
@@ -23,10 +23,18 @@ wr() { if [ -e $1 ]; then echo $2 > $1; fi }
 
 ############################################################
 
-# Disable exception trace & kernel watchdogs
+# Disable exception trace
 wr $PD/exception-trace 0
-wr $PK/nmi_watchdog 0
-wr $PK/soft_watchdog 0
+
+# Kernel parameter tweaks
+wr $PK/sched_latency_ns 10000000
+wr $PK/sched_min_granularity_ns $(( $(cat $PK/sched_latency_ns) / 2 ))
+wr $PK/sched_wakeup_granularity_ns $(( $(cat $PK/sched_latency_ns) / 2 ))
+wr $PK/shmall $(( $(( $RAM_KB * 500 )) / $(getconf PAGE_SIZE) )) 
+wr $PK/shmmax $(( $RAM_KB * 500 ))
+wr $PK/shmmni 4096
+wr $PK/watchdog 0
+wr $PK/watchdog_thresh 0
 
 # Networking stack tweaks
 wr $PN/core/netdev_budget 512
