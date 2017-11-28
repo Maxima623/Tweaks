@@ -1,9 +1,10 @@
 [Unit]
 Description=Linux System Tweaks
+After=multi-user.target
 
 [Service]
-ExecStart=/usr/local/bin/tweak
-Type=idle
+ExecStart=/etc/xopt/tweak
+Type=oneshot
 
 [Install]
 WantedBy=multi-user.target
