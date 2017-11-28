@@ -29,7 +29,7 @@ wr $PD/exception-trace 0
 # Kernel parameter tweaks
 wr $PK/sched_latency_ns 10000000
 wr $PK/sched_min_granularity_ns $(( $(cat $PK/sched_latency_ns) / 2 ))
-wr $PK/sched_wakeup_granularity_ns $(( $(cat $PK/sched_latency_ns) / 2 ))
+wr $PK/sched_wakeup_granularity_ns $(cat /$PK/sched_min_granularity_ns)
 wr $PK/shmall $(( $(( $RAM_KB * 500 )) / $(getconf PAGE_SIZE) )) 
 wr $PK/shmmax $(( $RAM_KB * 500 ))
 wr $PK/shmmni 4096
@@ -37,7 +37,9 @@ wr $PK/watchdog 0
 wr $PK/watchdog_thresh 0
 
 # Networking stack tweaks
-wr $PN/core/netdev_budget 512
+wr $PN/core/dev_weight 1024
+wr $PN/core/netdev_budget 1024
+wr $PN/core/netdev_max_backlog 2048
 wr $PN/core/optmem_max 65536
 wr $PN/core/somaxconn 1024
 wr $PN/ipv4/ip_local_port_range '1024 65535'
