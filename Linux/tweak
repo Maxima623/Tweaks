@@ -95,8 +95,4 @@ wr $SB/rq_affinity 2
 # Use BFQ (Budget Fair Queueing) I/O scheduler if available
 if ( grep -q "bfq-sq" $SB/scheduler ); then wr $SB/scheduler "bfq-sq"; fi
 
-# Reduce transmit queue length from default of 1000 packets
-ifconfig enp3s0 txqueuelen 50
-ifconfig wlp2s0 txqueuelen 50
-
 exit 0
