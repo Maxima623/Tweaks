@@ -1,6 +1,6 @@
 #! /bin/sh
 
-if [ ! -e /tmp/systweaked ]; then sleep 10;
+if [ ! -e /tmp/tweaked ]; then sleep 10;
 	CR="/proc/sys/net/core"
 	I4="/proc/sys/net/ipv4"
 	I6="/proc/sys/net/ipv6"
