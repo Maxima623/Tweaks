@@ -1,5 +1,7 @@
 #! /bin/sh
 
+if [ -e /tmp/tweaked ]; then exit 0
+
 CR="/proc/sys/net/core"
 I4="/proc/sys/net/ipv4"
 I6="/proc/sys/net/ipv6"
