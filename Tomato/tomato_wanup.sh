@@ -61,4 +61,6 @@ fi
 wget -O - https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts | grep .0.0. | sed -e '2,$s/127.0.0.1/0.0.0.0/g' -e 's/[[:space:]]*#.*$//' > /etc/dnsmasq/hosts/blkhosts
 killall -1 dnsmasq
 
+rm -rf /tmp/tomato_wanup.sh
+
 exit 0
