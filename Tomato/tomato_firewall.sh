@@ -1,5 +1,7 @@
 #! /bin/sh
 
+if [ -e /tmp/fwltweaked ]; then exit 0; else echo > /tmp/fwltweaked; fi
+
 iptables -I INPUT 3 -p udp -m state --state NEW -j DROP
 iptables -I INPUT 3 -p udp -m state --state NEW -m limit --limit 16/second --limit-burst 16 -j ACCEPT
 iptables -I INPUT 3 -p udp -m connlimit --connlimit-above 64 -j DROP
