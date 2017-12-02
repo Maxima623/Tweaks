@@ -26,4 +26,6 @@ iptables -t mangle -I PREROUTING -m state --state INVALID -j DROP
 iptables -t mangle -I PREROUTING -f -j DROP
 iptables -t mangle -I PREROUTING -p icmp -j DROP
 
+rm -rf /tmp/tomato_firewall.sh
+
 exit 0
