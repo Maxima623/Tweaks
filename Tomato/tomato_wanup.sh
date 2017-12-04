@@ -35,6 +35,7 @@ ec $I4/tcp_max_syn_backlog 4096
 ec $I4/tcp_max_tw_buckets 4096
 ec $I4/tcp_mtu_probing 1
 ec $I4/tcp_no_metrics_save 1
+ec $I4/tcp_reordering 5
 ec $I4/tcp_rfc1337 1
 ec $I4/tcp_rmem "65536 131072 262144"
 ec $I4/tcp_slow_start_after_idle 0
