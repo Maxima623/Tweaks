@@ -3,7 +3,7 @@ Description=Linux System Tweaks
 After=multi-user.target
 
 [Service]
-ExecStart=/etc/xopt/tweak
+ExecStart=/usr/local/bin/tweak
 Type=oneshot
 
 [Install]
