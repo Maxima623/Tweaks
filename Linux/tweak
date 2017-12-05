@@ -47,7 +47,7 @@ wr $PN/core/somaxconn 1024
 wr $PN/core/wmem_default 131072
 wr $PN/core/wmem_max 16777216
 
-wr $PN/ipv4/ip_local_port_range '1024 65535'
+wr $PN/ipv4/ip_local_port_range "1024 65535"
 wr $PN/ipv4/tcp_app_win 0
 wr $PN/ipv4/tcp_fin_timeout 30
 wr $PN/ipv4/tcp_keepalive_intvl 30
