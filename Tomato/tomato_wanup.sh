@@ -16,7 +16,7 @@ ec $CR/rmem_default 131072
 ec $CR/rmem_max 262144
 ec $CR/somaxconn 1024
 ec $CR/wmem_default 16384
-ec $CR/wmem_max 65536
+ec $CR/wmem_max 262144
 
 ec $I4/icmp_echo_ignore_all 1
 ec $I4/tcp_abc 1
@@ -35,12 +35,11 @@ ec $I4/tcp_max_syn_backlog 4096
 ec $I4/tcp_max_tw_buckets 4096
 ec $I4/tcp_mtu_probing 1
 ec $I4/tcp_no_metrics_save 1
-ec $I4/tcp_reordering 5
 ec $I4/tcp_rfc1337 1
 ec $I4/tcp_rmem "65536 131072 262144"
 ec $I4/tcp_slow_start_after_idle 0
 ec $I4/tcp_tw_recycle 0
-ec $I4/tcp_wmem "8192 16384 65536"
+ec $I4/tcp_wmem "8192 16384 262144"
 
 ec $I6/conf/all/disable_ipv6 1
 ec $UX/max_dgram_qlen 512
