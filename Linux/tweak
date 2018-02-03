@@ -1,17 +1,17 @@
 #! /bin/sh
 
 ############################################################
+############################################################
 
 # Path variables
 PD="/proc/sys/debug"
 PK="/proc/sys/kernel"
 PN="/proc/sys/net"
 PV="/proc/sys/vm"
-SB="/sys/block/sda/queue"
-SK="/sys/kernel/mm/ksm"
-ST="/sys/kernel/mm/transparent_hugepage"
+BQ="/sys/block/sda/queue"
+KT="/sys/kernel/mm/transparent_hugepage"
 
-# Determine RAM size in KB
+# Determine physical memory size in KB
 RAM_KB="$(free | awk '/Mem/ {print $2}')"
 
 # Define a function that only modifies settings if they exist
@@ -19,19 +19,23 @@ RAM_KB="$(free | awk '/Mem/ {print $2}')"
 wr() { if [ -e $1 ]; then echo $2 > $1; fi }
 
 ############################################################
+############################################################
 
-# Disable exception trace
+# Disable exception trace and kernel watchdogs
 wr $PD/exception-trace 0
+wr $PK/watchdog 0
+wr $PK/watchdog_thresh 0
 
-# Kernel parameter tweaks
-wr $PK/sched_latency_ns 10000000
-wr $PK/sched_min_granularity_ns 5000000
-wr $PK/sched_wakeup_granularity_ns 5000000
+# Kernel timing and shared resources tweaks
+wr $PK/sched_latency_ns 1000000
+wr $PK/sched_min_granularity_ns 500000
+wr $PK/sched_migration_cost_ns 5000000
+wr $PK/sched_rt_period_us 1000000
+wr $PK/sched_rt_runtime_us 990000
+wr $PK/sched_wakeup_granularity_ns 250000
 wr $PK/shmall $(( $(( $RAM_KB * 500 )) / $(getconf PAGE_SIZE) )) 
 wr $PK/shmmax $(( $RAM_KB * 500 ))
 wr $PK/shmmni 4096
-wr $PK/watchdog 0
-wr $PK/watchdog_thresh 0
 
 # Networking stack tweaks
 wr $PN/core/dev_weight 1024
@@ -69,32 +73,30 @@ wr $PV/dirty_bytes 67108864
 wr $PV/dirty_background_bytes 16777216
 wr $PV/dirty_expire_centisecs 60000
 wr $PV/dirty_writeback_centisecs 60000
+wr $PV/min_free_kbytes 131072
 wr $PV/oom_dump_tasks 0
 wr $PV/oom_kill_allocating_task 1
-wr $PV/overcommit_memory 2
+wr $PV/overcommit_memory 0
 wr $PV/overcommit_ratio 100
 wr $PV/stat_interval 60
 wr $PV/swappiness 10
 wr $PV/vfs_cache_pressure 50
-wr $PV/watermark_scale_factor 500
-wr $SK/run 1
-wr $SK/pages_to_scan 128
-wr $SK/sleep_millisecs 1000
-wr $ST/defrag madvise
-wr $ST/enabled madvise
+wr $PV/watermark_scale_factor 1000
+wr $KT/defrag "never"
+wr $KT/enabled "never"
 
-# Disk I/O queue tweaks
-wr $SB/iosched/fifo_expire_async 60000
-wr $SB/iosched/fifo_expire_sync 250
-wr $SB/iosched/low_latency 1
-wr $SB/iosched/slice_async 50
-wr $SB/iosched/slice_idle 3
-wr $SB/iosched/slice_sync 100
-wr $SB/add_random 0
-wr $SB/iostats 0
-wr $SB/nr_requests 1024
-wr $SB/max_sectors_kb $(cat $SB/max_hw_sectors_kb)
-wr $SB/read_ahead_kb 1024
-wr $SB/rq_affinity 2
+# Use tweaked "deadline" I/O queue scheduler
+wr $BQ/scheduler "deadline"
+wr $BQ/iosched/fifo_batch 4
+wr $BQ/iosched/read_expire 500
+wr $BQ/iosched/write_expire 3000
+wr $BQ/iosched/writes_starved 3
+
+# General disk I/O queue tweaks
+wr $BQ/add_random 0
+wr $BQ/iostats 0
+wr $BQ/max_sectors_kb $(cat $BQ/max_hw_sectors_kb)
+wr $BQ/read_ahead_kb 1024
+wr $BQ/rq_affinity 2
 
 exit 0
