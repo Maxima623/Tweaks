@@ -1,16 +1,5 @@
 #! /bin/sh
 
-############################################################
-############################################################
-
-# Path variables
-PD="/proc/sys/debug"
-PK="/proc/sys/kernel"
-PN="/proc/sys/net"
-PV="/proc/sys/vm"
-BQ="/sys/block/sda/queue"
-KT="/sys/kernel/mm/transparent_hugepage"
-
 # Determine physical memory size in KB
 RAM_KB="$(free | awk '/Mem/ {print $2}')"
 
@@ -18,85 +7,110 @@ RAM_KB="$(free | awk '/Mem/ {print $2}')"
 # Useful if using script across different kernel versions
 wr() { if [ -e $1 ]; then echo $2 > $1; fi }
 
-############################################################
-############################################################
+#############################################################
+cd /proc/sys/debug
+#############################################################
 
-# Disable exception trace and kernel watchdogs
-wr $PD/exception-trace 0
-wr $PK/watchdog 0
-wr $PK/watchdog_thresh 0
+wr exception-trace 0
 
-# Kernel timing and shared resources tweaks
-wr $PK/sched_latency_ns 1000000
-wr $PK/sched_min_granularity_ns 500000
-wr $PK/sched_migration_cost_ns 5000000
-wr $PK/sched_rt_period_us 1000000
-wr $PK/sched_rt_runtime_us 990000
-wr $PK/sched_wakeup_granularity_ns 250000
-wr $PK/shmall $(( $(( $RAM_KB * 500 )) / $(getconf PAGE_SIZE) )) 
-wr $PK/shmmax $(( $RAM_KB * 500 ))
-wr $PK/shmmni 4096
+#############################################################
+cd /proc/sys/kernel
+#############################################################
 
-# Networking stack tweaks
-wr $PN/core/dev_weight 1024
-wr $PN/core/netdev_budget 1024
-wr $PN/core/netdev_max_backlog 1024
-wr $PN/core/optmem_max 65536
-wr $PN/core/rmem_default 131072
-wr $PN/core/rmem_max 16777216
-wr $PN/core/somaxconn 1024
-wr $PN/core/wmem_default 131072
-wr $PN/core/wmem_max 16777216
-wr $PN/ipv4/ip_local_port_range "1024 65535"
-wr $PN/ipv4/tcp_app_win 0
-wr $PN/ipv4/tcp_fin_timeout 30
-wr $PN/ipv4/tcp_keepalive_intvl 30
-wr $PN/ipv4/tcp_keepalive_probes 5
-wr $PN/ipv4/tcp_keepalive_time 600
-wr $PN/ipv4/tcp_max_syn_backlog 8192
-wr $PN/ipv4/tcp_mtu_probing 1
-wr $PN/ipv4/tcp_no_metrics_save 1
-wr $PN/ipv4/tcp_low_latency 1
-wr $PN/ipv4/tcp_rmem "65536 131072 16777216"
-wr $PN/ipv4/tcp_rfc1337 1
-wr $PN/ipv4/tcp_slow_start_after_idle 0
-wr $PN/ipv4/tcp_synack_retries 3
-wr $PN/ipv4/tcp_syn_retries 3
-wr $PN/ipv4/tcp_tw_reuse 1
-wr $PN/ipv4/tcp_wmem "65536 131072 16777216"
-wr $PN/ipv4/udp_rmem_min 65536
-wr $PN/ipv4/udp_wmem_min 65536
-wr $PN/ipv6/conf/all/disable_ipv6 1
+wr msgmax 32768
+wr msgmnb 65536
+wr msgmni 8192
+wr sched_latency_ns 1000000
+wr sched_min_granularity_ns 500000
+wr sched_migration_cost_ns 5000000
+wr sched_rr_timeslice_ms 20
+wr sched_rt_period_us 1000000
+wr sched_rt_runtime_us 990000
+wr sched_wakeup_granularity_ns 250000
+wr shmall $(( $(( $RAM_KB * 500 )) / $(getconf PAGE_SIZE) )) 
+wr shmmax $(( $RAM_KB * 500 ))
+wr shmmni 4096
+wr watchdog 0
+wr watchdog_thresh 0
 
-# General memory management tweaks
-wr $PV/dirty_bytes 67108864
-wr $PV/dirty_background_bytes 16777216
-wr $PV/dirty_expire_centisecs 60000
-wr $PV/dirty_writeback_centisecs 60000
-wr $PV/min_free_kbytes 131072
-wr $PV/oom_dump_tasks 0
-wr $PV/oom_kill_allocating_task 1
-wr $PV/overcommit_memory 0
-wr $PV/overcommit_ratio 100
-wr $PV/stat_interval 60
-wr $PV/swappiness 10
-wr $PV/vfs_cache_pressure 50
-wr $PV/watermark_scale_factor 1000
-wr $KT/defrag "never"
-wr $KT/enabled "never"
+#############################################################
+cd /proc/sys/net
+#############################################################
 
-# Use tweaked "deadline" I/O queue scheduler
-wr $BQ/scheduler "deadline"
-wr $BQ/iosched/fifo_batch 4
-wr $BQ/iosched/read_expire 500
-wr $BQ/iosched/write_expire 3000
-wr $BQ/iosched/writes_starved 3
+wr core/dev_weight 1024
+wr core/netdev_budget 1024
+wr core/netdev_max_backlog 1024
+wr core/optmem_max 65536
+wr core/rmem_default 131072
+wr core/rmem_max 16777216
+wr core/somaxconn 1024
+wr core/wmem_default 131072
+wr core/wmem_max 16777216
 
-# General disk I/O queue tweaks
-wr $BQ/add_random 0
-wr $BQ/iostats 0
-wr $BQ/max_sectors_kb $(cat $BQ/max_hw_sectors_kb)
-wr $BQ/read_ahead_kb 1024
-wr $BQ/rq_affinity 2
+wr ipv4/ip_local_port_range "1024 65535"
+wr ipv4/tcp_app_win 0
+wr ipv4/tcp_fack 1
+wr ipv4/tcp_fin_timeout 30
+wr ipv4/tcp_keepalive_intvl 30
+wr ipv4/tcp_keepalive_probes 5
+wr ipv4/tcp_keepalive_time 600
+wr ipv4/tcp_max_syn_backlog 8192
+wr ipv4/tcp_mtu_probing 1
+wr ipv4/tcp_no_metrics_save 1
+wr ipv4/tcp_low_latency 1
+wr ipv4/tcp_rmem "65536 131072 16777216"
+wr ipv4/tcp_rfc1337 1
+wr ipv4/tcp_slow_start_after_idle 0
+wr ipv4/tcp_synack_retries 3
+wr ipv4/tcp_syn_retries 3
+wr ipv4/tcp_tw_reuse 1
+wr ipv4/tcp_wmem "65536 131072 16777216"
+wr ipv4/udp_rmem_min 65536
+wr ipv4/udp_wmem_min 65536
 
+wr ipv6/conf/all/disable_ipv6 1
+
+#############################################################
+cd /proc/sys/vm
+#############################################################
+
+wr dirty_bytes 67108864
+wr dirty_background_bytes 16777216
+wr dirty_expire_centisecs 60000
+wr dirty_writeback_centisecs 60000
+wr min_free_kbytes 131072
+wr oom_dump_tasks 0
+wr oom_kill_allocating_task 1
+wr overcommit_memory 1
+wr overcommit_ratio 100
+wr stat_interval 60
+wr swappiness 10
+wr vfs_cache_pressure 50
+wr watermark_scale_factor 1000
+
+#############################################################
+cd /sys/kernel/mm/transparent_hugepage
+#############################################################
+
+wr defrag "never"
+wr enabled "never"
+
+#############################################################
+cd /sys/block/sda/queue
+#############################################################
+
+wr add_random 0
+wr iostats 0
+wr max_sectors_kb $(cat max_hw_sectors_kb)
+wr read_ahead_kb 1024
+wr rq_affinity 2
+
+wr scheduler "deadline"
+wr iosched/fifo_batch 4
+wr iosched/read_expire 500
+wr iosched/write_expire 3000
+wr iosched/writes_starved 3
+
+#############################################################
 exit 0
+#############################################################
