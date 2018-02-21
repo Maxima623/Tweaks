@@ -1,0 +1,33 @@
+#! /bin/sh
+
+wr() { if [ -e $1 ]; then echo $2 > $1; fi }
+
+#############################################################
+cd /proc/sys/vm
+#############################################################
+
+wr dirty_bytes 67108864
+wr dirty_background_bytes 16777216
+wr dirty_expire_centisecs 90000
+wr dirty_writeback_centisecs 90000
+wr drop_caches 3
+wr min_free_kbytes 131072
+wr oom_dump_tasks 0
+wr oom_kill_allocating_task 1
+wr overcommit_ratio 100
+wr stat_interval 60
+wr swappiness 1
+wr vfs_cache_pressure 50
+wr watermark_scale_factor 100
+
+#############################################################
+cd /sys/kernel/mm/transparent_hugepage
+#############################################################
+
+wr khugepaged/defrag 0
+wr defrag "never"
+wr enabled "never"
+
+#############################################################
+exit 0
+#############################################################

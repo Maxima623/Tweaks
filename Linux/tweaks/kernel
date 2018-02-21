@@ -1,0 +1,35 @@
+#! /bin/sh
+
+wr() { if [ -e $1 ]; then echo $2 > $1; fi }
+
+#############################################################
+cd /proc/sys/debug
+#############################################################
+
+wr exception-trace 0
+
+#############################################################
+cd /proc/sys/kernel
+#############################################################
+
+wr ftrace_enabled 0
+wr msgmax 32768
+wr msgmnb 65536
+wr msgmni 8192
+wr sched_cfs_bandwidth_slice_us 1000
+wr sched_latency_ns 1000000
+wr sched_min_granularity_ns 100000
+wr sched_migration_cost_ns 5000000
+wr sched_rr_timeslice_ms 20
+wr sched_rt_period_us 1000000
+wr sched_rt_runtime_us 990000
+wr sched_wakeup_granularity_ns 25000
+wr shmall $(( $(( $(free | awk '/Mem/ {print $2}') * 500 )) / $(getconf PAGE_SIZE) )) 
+wr shmmax $(( $(free | awk '/Mem/ {print $2}') * 500 ))
+wr shmmni 4096
+wr watchdog 0
+wr watchdog_thresh 0
+
+#############################################################
+exit 0
+#############################################################

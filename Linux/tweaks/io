@@ -1,0 +1,24 @@
+#! /bin/sh
+
+wr() { if [ -e $1 ]; then echo $2 > $1; fi }
+
+#############################################################
+cd /sys/block/sda/queue
+#############################################################
+
+if ( cat scheduler | grep "bfq" > /dev/null 2>&1 ); then 
+    wr scheduler "bfq-sq"
+    wr iosched/fifo_expire_async 60000
+    wr iosched/fifo_expire_sync 250
+    wr iosched/slice_idle 3
+fi
+
+wr add_random 0
+wr iostats 0
+wr max_sectors_kb $(cat max_hw_sectors_kb)
+wr read_ahead_kb 1024
+wr rq_affinity 2
+
+#############################################################
+exit 0
+#############################################################
