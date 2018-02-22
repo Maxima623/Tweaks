@@ -1,7 +1,5 @@
 #! /bin/sh
 
-if [ -e xhosts ]; then rm -rf xhosts; fi
-
 HOSTS=" 
         ""https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&mimetype=plaintext&useip=0.0.0.0""
         ""https://adaway.org/hosts.txt""
