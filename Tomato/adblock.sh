@@ -5,6 +5,7 @@ if [ -e xhosts ]; then rm -rf xhosts; fi
 HOSTS=" 
         ""https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&mimetype=plaintext&useip=0.0.0.0""
         ""https://adaway.org/hosts.txt""
+        ""http://someonewhocares.org/hosts/zero/hosts""
         ""http://www.malwaredomainlist.com/hostslist/hosts.txt""
         ""http://winhelp2002.mvps.org/hosts.txt""
       "
